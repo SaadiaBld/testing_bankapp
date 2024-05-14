@@ -7,7 +7,11 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship, declarative_base, scoped_session, sessionmaker
 
 Base = declarative_base()
+db_path = 'sqlite:///bank.db' #stocke chemin pr acceder a sqlite
 
+engine = create_engine(db_path)
+Session = scoped_session(sessionmaker(bind=engine))
+Base.metadata.create_all(engine)
 
 
 #DEFINIR LOGIQUE APP
@@ -26,19 +30,21 @@ class Account(Base):
     def __repr__(self):
         return f"Compte crée au nom de {self.name}. Votre solde initial est {self.solde}"
     
-    def get_balance(self):
-        new_transaction = Transaction(account = self, montant = self.montant)
-        session = Session()
-        session.add(new_transaction)
-        print('Voici l\'id de la new_transaction:', new_transaction.id)
+    # def get_balance(self):
+    #     new_transaction = Transaction(account = self, montant = self.montant)
+    #     session = Session()
+    #     session.add(new_transaction)
+    #     session.commit()
+    #     print('Voici l\'id de la new_transaction:', new_transaction.id)
 
 
 
 class Transaction(Base):
     __tablename__ = 'transactions'
     id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey('[account.id]'))
-    montant = Column(Integer)
+    account_id = Column(Integer, ForeignKey(Account(id)))
+    montant = Column(Integer) 
+    account = relationship('Account', back_populates='transactions')
 
 
     def __init__(self, account, montant):
@@ -46,19 +52,20 @@ class Transaction(Base):
         self.montant = montant
       
 
-    def __repr__(self):
-        return f"Transaction enregistrée"
-    def deposit (self, amount):
-        self.amount = amount
-        self.solde += amount
-        return self.solde
+    # def __repr__(self):
+    #     return f"Transaction enregistrée"
+    
+    # def deposit (self, amount):
+    #     self.amount = amount
+    #     self.solde += amount
+    #     return self.solde
 
-    def withdraw (self, amount):
-        self.account -= amount
-        return self.account 
+    # def withdraw (self, amount):
+    #     self.account -= amount
+    #     return self.account 
 
-    def transfer (self, amount, destination_account):
-        self.destination_account += self.amount
+    # def transfer (self, amount, destination_account):
+    #     self.destination_account += self.amount
 
-
+Base.metadata.create_all(engine) 
 a = Account('Tom')
