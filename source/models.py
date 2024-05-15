@@ -3,25 +3,26 @@
 #sqlachemy va avoir effet sur bdd, donc example.app va creer entrees pour la bdd. L'idee est de tester le mocking en simulant la bdd pour qu moment du test de ne pas polluer la bdd
 #avec sqlachemy, la classe est le reflet de la bdd
 #transfert = sortie d'un compte A et entree dans un compte B
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship, declarative_base, scoped_session, sessionmaker
 
-Base = declarative_base()
-db_path = 'sqlite:///bank.db' #stocke chemin pr acceder a sqlite
-
+#code issu de init car probleme engine non reconnu:
+db_path = 'sqlite:///bank.db' #stocke chemin pr acceder a fichier sqlite, stocké dans le meme niveau que mon fichier
 engine = create_engine(db_path)
-Session = scoped_session(sessionmaker(bind=engine))
-Base.metadata.create_all(engine)
+
+Base = declarative_base() 
 
 
 #DEFINIR LOGIQUE APP
 
 class Account(Base):
+
     __tablename__ = "accounts"
-    id = Column(Integer, primary_key = True, index = True)
+    id = Column(Integer, primary_key = True)
     name = Column(String)
     solde = Column(Integer)
-    transactions = relationship("Transaction", back_populates='account')
+
+    transactions = relationship("Transaction", back_populates='accounts') #la table account reference account dans la table transaction
 
     def __init__(self, name):
         self.name = name
@@ -40,11 +41,12 @@ class Account(Base):
 
 
 class Transaction(Base):
+
     __tablename__ = 'transactions'
-    id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey(Account(id)))
+    id = Column(Integer, primary_key=True)
+    account_id = Column(Integer, ForeignKey("accounts.id"))
     montant = Column(Integer) 
-    account = relationship('Account', back_populates='transactions')
+    accounts = relationship('Account', back_populates='transactions')
 
 
     def __init__(self, account, montant):
@@ -67,5 +69,9 @@ class Transaction(Base):
     # def transfer (self, amount, destination_account):
     #     self.destination_account += self.amount
 
-Base.metadata.create_all(engine) 
+
+metadata = Base.metadata
+if __name__ == '__main__':
+    metadata.create_all(engine)
+#Base.metadata.create_all(engine) 
 a = Account('Tom')
