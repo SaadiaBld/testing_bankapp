@@ -2,8 +2,8 @@ from models import *
 from init_db import *
 
 
-session = setup_db()
-#session =Session()
+Session = setup_db()
+session =Session()
 
 #ajout de nouveaux comptes
 account1 = Account('Batman', session=session)
