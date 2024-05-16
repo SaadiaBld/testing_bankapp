@@ -1,3 +1,4 @@
-pytest
-requests
-sqlalchemy
+pytest==8.2.0
+requests==2.31.0
+sqlalchemy==2.0.30
+mock-alchemy==0.2.6

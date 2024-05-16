@@ -20,35 +20,36 @@ class Account(Base):
 
     transactions = relationship("Transaction", back_populates='account') #la table account reference account dans la table transaction
 
-    def __init__(self, name):
+    def __init__(self, name, session):
         self.name = name
         self.solde = 0
+        self.session = session
 
     def get_balance(self):
         return f"Votre solde actuel est: {self.solde} Deniers."
     
-    def deposit(self, montant, session):
+    def deposit(self, montant):
         self.montant = montant
         self.solde += montant
         new_transaction = Transaction(account=self, montant=montant, date_operation= date.today(), type_operation = 'deposit')         
-        session.add(new_transaction)
-        session.commit()
+        self.session.add(new_transaction)
+        self.session.commit()
     
-    def withdraw (self, montant, session):
+    def withdraw (self, montant):
         self.montant = montant
         if self.solde > montant:
             self.solde -= montant
             new_transaction = Transaction(account=self, montant=montant, date_operation=date.today(), type_operation= 'withdraw')
-            session.add(new_transaction)
-            session.commit()
+            self.session.add(new_transaction)
+            self.session.commit()
             return self.solde
         else:
             return f'Solde insuffisant'
         
     def transfer (self, montant, receiver_account):
         self.montant = montant
-        self.receiver_account = Account(receiver_account, session=session)
-        return self.withdraw(montant, session), receiver_account.deposit(montant, session)
+        self.receiver_account = Account(receiver_account, self.session)
+        return self.withdraw(montant), receiver_account.deposit(montant)
         
 
 
@@ -74,17 +75,12 @@ class Transaction(Base):
         return f"Transaction enregistrée"
     
 
-metadata = Base.metadata
-if __name__ == '__main__':
-    from init_db import setup_db
-    session = setup_db()  # Initialiser la base de données et obtenir une session
-    metadata.create_all(session.bind)
-    print('%%%%%%session', session)
 
-#test
-a = Account('Tom')
-a.deposit(1000, session)
-a.withdraw(500)
+
+# #test pour le terminal, mais une fois fichier example crée, mettre son code dedans
+# a = Account('Tom')
+# a.deposit(1000, session)
+# a.withdraw(500)
 
 # a = Account('Tom')
 
