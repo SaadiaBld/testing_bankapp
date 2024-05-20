@@ -30,21 +30,26 @@ class Account(Base):
     
     def deposit(self, montant):
         self.montant = montant
-        self.solde += montant
-        new_transaction = Transaction(account=self, montant=montant, date_operation= date.today(), type_operation = 'deposit')         
-        self.session.add(new_transaction)
-        self.session.commit()
-    
+        if self.montant > 0:
+            self.solde += montant
+            new_transaction = Transaction(account=self, montant=montant, date_operation= date.today(), type_operation = 'deposit')         
+            self.session.add(new_transaction)
+            self.session.commit()
+        else:
+            return f'Veuillez entrer un montant positif'
+        
     def withdraw (self, montant):
         self.montant = montant
-        if self.solde > montant:
+        if self.montant == 0:
+            return f'Veuillez entrer un montant positif'
+        elif self.montant > self.solde:
+            return f'Solde insuffisant'
+        else:   
             self.solde -= montant
             new_transaction = Transaction(account=self, montant=montant, date_operation=date.today(), type_operation= 'withdraw')
             self.session.add(new_transaction)
             self.session.commit()
-            return self.solde
-        else:
-            return f'Solde insuffisant'
+            #return self.solde
         
     def transfer (self, montant, receiver_account):
         self.montant = montant
