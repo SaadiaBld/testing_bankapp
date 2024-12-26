@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt  # Assurez-vous d'avoir un fichier requirements.txt dans votre projet
+        pip install -r requirements.txt  
 
     # 4. Exécuter les tests avec pytest
     - name: Run tests
