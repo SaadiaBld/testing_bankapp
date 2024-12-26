@@ -53,14 +53,16 @@ class Account(Base):
     def withdraw (self, montant):
         '''Déduit un montant si le solde est suffisant, sinon retourne un message d'erreur.'''
         self.montant = montant
-        if self.solde > montant:
+        if self.montant == 0:
+            return f'Veuillez entrer un montant positif'
+        elif self.montant > self.solde:
+            return f'Solde insuffisant'
+        else:   
             self.solde -= montant
             new_transaction = Transaction(account=self, montant=montant, date_operation=date.today(), type_operation= 'withdraw')
             self.session.add(new_transaction)
             self.session.commit()
-            return self.solde
-        else:
-            return f'Solde insuffisant'
+            #return self.solde
         
     def transfer (self, montant, receiver_account):
         '''Permet de transférer de l'argent d'un compte vers un autre.'''
