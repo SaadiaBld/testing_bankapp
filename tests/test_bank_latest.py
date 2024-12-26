@@ -25,7 +25,7 @@ def valid_account(db_session):
 # Classe pour les tests
 class TestBank:
     def test_account_valid(self, valid_account, db_session):
-        # Vérifie que le compte a été créé avec le solde initial correct
+        #vérifie que le compte a été créé avec le solde initial correct
         flash = db_session.query(Account).filter_by(name="Flash").first()
         assert flash.name == 'Flash'
         assert flash.solde == 0
