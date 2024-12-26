@@ -1,17 +1,26 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, CheckConstraint, Date, DateTime
 from sqlalchemy.orm import relationship, declarative_base, scoped_session, sessionmaker
 from datetime import date
-#from init_db import * import circulaire!
+
+"""On définit les modèles principaux : Account et Transaction, ainsi que leur relation.
+Et On met en place la logique métier :
+
+    Consultation du solde.
+    Dépôt, retrait, et transfert d'argent.
+    Enregistrement des transactions dans la base de données.
+
+Gère les relations entre comptes et transactions dans une base relationnelle."""
 
 #code issu de init car probleme engine non reconnu:
 # db_path = 'sqlite:///bank.db' #stocke chemin pr acceder a fichier sqlite, stocké dans le meme niveau que mon fichier
 # engine = create_engine(db_path)
 
-Base = declarative_base() 
+Base = declarative_base() #base pour défninir mes modeles, tous les modeles heritent de base
 
 #DEFINIR LOGIQUE APP
 
 class Account(Base):
+    '''Représente un compte bancaire, avec les colonnes et les relations définies dans la base de données '''
 
     __tablename__ = "accounts"
     id = Column(Integer, primary_key = True)
@@ -26,9 +35,11 @@ class Account(Base):
         self.session = session
 
     def get_balance(self):
+        """Retourne le solde actuel"""
         return f"Votre solde actuel est: {self.solde} Deniers."
     
     def deposit(self, montant):
+        '''Ajoute un montant au solde et enregistre une transaction de type "dépôt".'''
         self.montant = montant
         self.solde += montant
         new_transaction = Transaction(account=self, montant=montant, date_operation= date.today(), type_operation = 'deposit')         
@@ -36,6 +47,7 @@ class Account(Base):
         self.session.commit()
     
     def withdraw (self, montant):
+        '''Déduit un montant si le solde est suffisant, sinon retourne un message d'erreur.'''
         self.montant = montant
         if self.solde > montant:
             self.solde -= montant
@@ -47,6 +59,7 @@ class Account(Base):
             return f'Solde insuffisant'
         
     def transfer (self, montant, receiver_account):
+        '''Permet de transférer de l'argent d'un compte vers un autre.'''
         self.montant = montant
         self.receiver_account = Account(receiver_account, self.session)
         return self.withdraw(montant), receiver_account.deposit(montant)
@@ -54,7 +67,7 @@ class Account(Base):
 
 
 class Transaction(Base):
-
+    '''Représente une transaction bancaire liée à un compte'''
     __tablename__ = 'transactions'
     id = Column(Integer, primary_key=True)
     account_id = Column(Integer, ForeignKey("accounts.id"))
