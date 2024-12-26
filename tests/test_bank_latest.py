@@ -56,3 +56,30 @@ class TestBank:
 
         # Vérifier que le solde n'a pas changé
         assert valid_account.solde == 0
+
+    def test_transfer_normal(self, db_session):
+        #2 comptes crées pour transfert
+        sender = Account(name="Sender", session=db_session)
+        receiver = Account(name="Receiver", session=db_session)
+        db_session.add(sender)
+        db_session.add(receiver)
+        db_session.commit()
+
+        #fonds ajoutés sur compte emetteur
+        sender.deposit(1000)
+
+        # realiser un transfert
+        sender.transfer(500, receiver)
+
+        # verifie les soldes des comptes
+        assert sender.solde == 500
+        assert receiver.solde == 500
+
+        # vérifier les transactions
+        sender_transaction = db_session.query(Transaction).filter_by(account_id=sender.id, type_operation="withdraw").first()
+        receiver_transaction = db_session.query(Transaction).filter_by(account_id=receiver.id, type_operation="deposit").first()
+
+        assert sender_transaction is not None
+        assert sender_transaction.montant == 500
+        assert receiver_transaction is not None
+        assert receiver_transaction.montant == 500
