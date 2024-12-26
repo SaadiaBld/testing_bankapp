@@ -22,7 +22,6 @@ def valid_account(db_session):
     db_session.commit()
     return account
 
-
 # Classe pour les tests
 class TestBank:
     def test_account_valid(self, valid_account, db_session):
