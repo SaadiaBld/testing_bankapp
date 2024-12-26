@@ -40,9 +40,13 @@ class Account(Base):
     
     def deposit(self, montant):
         '''Ajoute un montant au solde et enregistre une transaction de type "dépôt".'''
-        self.montant = montant
+
+        if montant <= 0:
+            raise ValueError("Le montant du dépôt doit être positif.")
         self.solde += montant
+        
         new_transaction = Transaction(account=self, montant=montant, date_operation= date.today(), type_operation = 'deposit')         
+        
         self.session.add(new_transaction)
         self.session.commit()
     
